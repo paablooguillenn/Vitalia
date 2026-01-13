@@ -1,0 +1,66 @@
+-- Initial database schema creation
+-- TODO: Create users table with fields:
+--   - id (BIGSERIAL PRIMARY KEY)
+--   - username (VARCHAR UNIQUE NOT NULL)
+--   - email (VARCHAR UNIQUE NOT NULL)
+--   - password (VARCHAR NOT NULL)
+--   - role (VARCHAR NOT NULL)
+--   - enabled (BOOLEAN DEFAULT TRUE)
+--   - created_at (TIMESTAMP)
+--   - updated_at (TIMESTAMP)
+
+-- TODO: Create doctors table with fields:
+--   - id (BIGSERIAL PRIMARY KEY)
+--   - user_id (BIGINT REFERENCES users(id))
+--   - specialization (VARCHAR)
+--   - license_number (VARCHAR UNIQUE)
+--   - phone_number (VARCHAR)
+--   - office_address (TEXT)
+--   - created_at (TIMESTAMP)
+--   - updated_at (TIMESTAMP)
+
+-- TODO: Create patients table with fields:
+--   - id (BIGSERIAL PRIMARY KEY)
+--   - user_id (BIGINT REFERENCES users(id))
+--   - date_of_birth (DATE)
+--   - phone_number (VARCHAR)
+--   - address (TEXT)
+--   - medical_history (TEXT)
+--   - insurance_info (TEXT)
+--   - created_at (TIMESTAMP)
+--   - updated_at (TIMESTAMP)
+
+-- TODO: Create appointments table with fields:
+--   - id (BIGSERIAL PRIMARY KEY)
+--   - doctor_id (BIGINT REFERENCES doctors(id))
+--   - patient_id (BIGINT REFERENCES patients(id))
+--   - appointment_date (TIMESTAMP NOT NULL)
+--   - duration (INTEGER)
+--   - status (VARCHAR NOT NULL)
+--   - reason (TEXT)
+--   - notes (TEXT)
+--   - created_at (TIMESTAMP)
+--   - updated_at (TIMESTAMP)
+
+-- TODO: Create files table with fields:
+--   - id (BIGSERIAL PRIMARY KEY)
+--   - filename (VARCHAR NOT NULL)
+--   - file_path (VARCHAR NOT NULL)
+--   - mime_type (VARCHAR)
+--   - file_size (BIGINT)
+--   - uploader_id (BIGINT REFERENCES users(id))
+--   - entity_type (VARCHAR)
+--   - entity_id (BIGINT)
+--   - created_at (TIMESTAMP)
+
+-- TODO: Create notifications table with fields:
+--   - id (BIGSERIAL PRIMARY KEY)
+--   - recipient_id (BIGINT REFERENCES users(id))
+--   - type (VARCHAR NOT NULL)
+--   - title (VARCHAR)
+--   - message (TEXT NOT NULL)
+--   - is_read (BOOLEAN DEFAULT FALSE)
+--   - is_sent (BOOLEAN DEFAULT FALSE)
+--   - created_at (TIMESTAMP)
+
+-- TODO: Add appropriate indexes for performance
