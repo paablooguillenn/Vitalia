@@ -6,7 +6,7 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/vitalia
     username: vitalia_user
-    password: change_me
+    password: your_secure_database_password_here
     driver-class-name: org.postgresql.Driver
 
   # JPA/Hibernate Configuration
@@ -39,7 +39,7 @@ server:
 
 # JWT Configuration
 jwt:
-  secret: change_this_secret_key_in_production_use_at_least_256_bits
+  secret: CHANGE_THIS_TO_A_SECURE_SECRET_KEY_AT_LEAST_256_BITS_LONG_FOR_HS256_ALGORITHM_USE_RANDOM_STRING
   expiration: 86400000 # 24 hours in milliseconds
 
 # Application Configuration
