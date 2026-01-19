@@ -24,13 +24,22 @@ target/
 /nbbuild/
 /dist/
 /nbdist/
-/.nb-gradle/
+/. nb-gradle/
 build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
 ### VS Code ###
 .vscode/
+
+### Android/Studio ###
+.gradle
+local.properties
+/local.properties
+.externalNativeBuild
+.cxx
+/captures
+.DS_Store
 
 ### Docker ###
 data/

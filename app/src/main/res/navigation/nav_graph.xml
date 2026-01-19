@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/LoginFragment">
+
+    <!-- =====================================
+         Authentication Flow
+    ====================================== -->
+    <fragment
+        android:id="@+id/LoginFragment"
+        android:name="com.example.vitalia.LoginFragment"
+        android:label="fragment_login"
+        tools:layout="@layout/fragment_login" >
+        <action
+            android:id="@+id/action_LoginFragment_to_PatientHomeFragment"
+            app:destination="@id/PatientHomeFragment"
+            app:popUpTo="@id/LoginFragment"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_LoginFragment_to_WorkerHomeFragment"
+            app:destination="@id/WorkerHomeFragment"
+            app:popUpTo="@id/LoginFragment"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_LoginFragment_to_RegisterFragment"
+            app:destination="@id/RegisterFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/RegisterFragment"
+        android:name="com.example.vitalia.RegisterFragment"
+        android:label="fragment_register"
+        tools:layout="@layout/fragment_register" >
+        <action
+            android:id="@+id/action_RegisterFragment_to_LoginFragment"
+            app:destination="@id/LoginFragment"
+            app:popUpTo="@id/LoginFragment"
+            app:popUpToInclusive="true"/>
+    </fragment>
+
+    <!-- =====================================
+         Patient Flow
+    ====================================== -->
+    <fragment
+        android:id="@+id/PatientHomeFragment"
+        android:name="com.example.vitalia.PatientHomeFragment"
+        android:label="Patient Home"
+        tools:layout="@layout/fragment_patient_home">
+        <action
+            android:id="@+id/action_PatientHomeFragment_to_AppointmentListFragment"
+            app:destination="@id/AppointmentListFragment" />
+        <action
+            android:id="@+id/action_PatientHomeFragment_to_EditProfileFragment"
+            app:destination="@id/EditProfileFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/AppointmentListFragment"
+        android:name="com.example.vitalia.AppointmentListFragment"
+        android:label="fragment_appointment_list"
+        tools:layout="@layout/fragment_appointment_list" >
+        <action
+            android:id="@+id/action_AppointmentListFragment_to_AppointmentDetailFragment"
+            app:destination="@id/AppointmentDetailFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/AppointmentDetailFragment"
+        android:name="com.example.vitalia.AppointmentDetailFragment"
+        android:label="fragment_appointment_detail"
+        tools:layout="@layout/fragment_appointment_detail" >
+        <argument
+            android:name="appointmentId"
+            app:argType="string" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/EditProfileFragment"
+        android:name="com.example.vitalia.EditProfileFragment"
+        android:label="fragment_edit_profile"
+        tools:layout="@layout/fragment_edit_profile" />
+
+
+    <!-- =====================================
+         Worker Flow
+    ====================================== -->
+    <fragment
+        android:id="@+id/WorkerHomeFragment"
+        android:name="com.example.vitalia.WorkerHomeFragment"
+        android:label="Worker Home"
+        tools:layout="@layout/fragment_worker_home">
+        <action
+            android:id="@+id/action_WorkerHomeFragment_to_QrScannerFragment"
+            app:destination="@id/QrScannerFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/QrScannerFragment"
+        android:name="com.example.vitalia.QrScannerFragment"
+        android:label="fragment_qr_scanner"
+        tools:layout="@layout/fragment_qr_scanner" />
+
+
+    <!-- =====================================
+         DEPRECATED - To be removed
+    ====================================== -->
+    <fragment
+        android:id="@+id/FirstFragment"
+        android:name="com.example.vitalia.FirstFragment"
+        android:label="@string/first_fragment_label"
+        tools:layout="@layout/fragment_first" />
+
+</navigation>
