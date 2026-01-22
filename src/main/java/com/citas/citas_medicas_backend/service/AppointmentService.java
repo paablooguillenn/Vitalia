@@ -9,11 +9,13 @@ import com.citas.citas_medicas_backend.model.User;
 import com.citas.citas_medicas_backend.repository.AppointmentRepository;
 import com.citas.citas_medicas_backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,9 +29,10 @@ public class AppointmentService {
      * Crear una nueva cita
      */
     @Transactional
-    public AppointmentResponse createAppointment(AppointmentRequest request) {
+    public AppointmentResponse createAppointment(@NonNull AppointmentRequest request) {
         // Validar que el doctor existe y tiene rol MEDICO
-        User doctor = userRepository.findById(request.getDoctorId())
+        Long doctorId = Objects.requireNonNull(request.getDoctorId(), "doctorId is required");
+        User doctor = userRepository.findById(doctorId)
             .orElseThrow(() -> new RuntimeException("Doctor no encontrado"));
         
         if (doctor.getRole() != Role.MEDICO) {
@@ -37,7 +40,8 @@ public class AppointmentService {
         }
         
         // Validar que el paciente existe y tiene rol PACIENTE
-        User patient = userRepository.findById(request.getPatientId())
+        Long patientId = Objects.requireNonNull(request.getPatientId(), "patientId is required");
+        User patient = userRepository.findById(patientId)
             .orElseThrow(() -> new RuntimeException("Paciente no encontrado"));
         
         if (patient.getRole() != Role.PACIENTE) {
@@ -45,7 +49,9 @@ public class AppointmentService {
         }
         
         // Validar solapamientos
-        if (hasOverlap(request.getDoctorId(), request.getDatetime(), null)) {
+        LocalDateTime datetime = Objects.requireNonNull(request.getDatetime(), "datetime is required");
+
+        if (hasOverlap(doctorId, datetime, null)) {
             throw new RuntimeException("El doctor ya tiene una cita en ese horario");
         }
         
@@ -79,8 +85,9 @@ public class AppointmentService {
     /**
      * Obtener cita por ID
      */
-    public AppointmentResponse getAppointmentById(Long id) {
-        Appointment appointment = appointmentRepository.findById(id)
+    public AppointmentResponse getAppointmentById(@NonNull Long id) {
+        Long appointmentId = Objects.requireNonNull(id, "appointment id is required");
+        Appointment appointment = appointmentRepository.findById(appointmentId)
             .orElseThrow(() -> new RuntimeException("Cita no encontrada"));
         return mapToResponse(appointment);
     }
@@ -88,8 +95,9 @@ public class AppointmentService {
     /**
      * Obtener citas por doctor
      */
-    public List<AppointmentResponse> getAppointmentsByDoctor(Long doctorId) {
-        return appointmentRepository.findByDoctorId(doctorId).stream()
+    public List<AppointmentResponse> getAppointmentsByDoctor(@NonNull Long doctorId) {
+        Long doctor = Objects.requireNonNull(doctorId, "doctorId is required");
+        return appointmentRepository.findByDoctorId(doctor).stream()
             .map(this::mapToResponse)
             .collect(Collectors.toList());
     }
@@ -97,8 +105,9 @@ public class AppointmentService {
     /**
      * Obtener citas por paciente
      */
-    public List<AppointmentResponse> getAppointmentsByPatient(Long patientId) {
-        return appointmentRepository.findByPatientId(patientId).stream()
+    public List<AppointmentResponse> getAppointmentsByPatient(@NonNull Long patientId) {
+        Long patient = Objects.requireNonNull(patientId, "patientId is required");
+        return appointmentRepository.findByPatientId(patient).stream()
             .map(this::mapToResponse)
             .collect(Collectors.toList());
     }
@@ -116,8 +125,9 @@ public class AppointmentService {
      * Actualizar/Reprogramar una cita
      */
     @Transactional
-    public AppointmentResponse updateAppointment(Long id, AppointmentRequest request) {
-        Appointment appointment = appointmentRepository.findById(id)
+    public AppointmentResponse updateAppointment(@NonNull Long id, @NonNull AppointmentRequest request) {
+        Long appointmentId = Objects.requireNonNull(id, "appointment id is required");
+        Appointment appointment = appointmentRepository.findById(appointmentId)
             .orElseThrow(() -> new RuntimeException("Cita no encontrada"));
         
         // Validar que no esté cancelada o completada
@@ -130,19 +140,21 @@ public class AppointmentService {
         if (!appointment.getDoctor().getId().equals(request.getDoctorId()) || 
             !appointment.getDatetime().equals(request.getDatetime())) {
             
-            if (hasOverlap(request.getDoctorId(), request.getDatetime(), id)) {
+            LocalDateTime datetime = Objects.requireNonNull(request.getDatetime(), "datetime is required");
+            if (hasOverlap(Objects.requireNonNull(request.getDoctorId(), "doctorId is required"), datetime, appointmentId)) {
                 throw new RuntimeException("El doctor ya tiene una cita en ese horario");
             }
             
             // Validar que la fecha no sea pasada
-            if (request.getDatetime().isBefore(LocalDateTime.now())) {
+            if (datetime.isBefore(LocalDateTime.now())) {
                 throw new RuntimeException("No se puede reprogramar a una fecha pasada");
             }
         }
         
         // Actualizar doctor si cambió
         if (!appointment.getDoctor().getId().equals(request.getDoctorId())) {
-            User doctor = userRepository.findById(request.getDoctorId())
+            Long doctorId = Objects.requireNonNull(request.getDoctorId(), "doctorId is required");
+            User doctor = userRepository.findById(doctorId)
                 .orElseThrow(() -> new RuntimeException("Doctor no encontrado"));
             if (doctor.getRole() != Role.MEDICO) {
                 throw new RuntimeException("El usuario no tiene rol de doctor");
@@ -152,7 +164,8 @@ public class AppointmentService {
         
         // Actualizar paciente si cambió
         if (!appointment.getPatient().getId().equals(request.getPatientId())) {
-            User patient = userRepository.findById(request.getPatientId())
+            Long patientId = Objects.requireNonNull(request.getPatientId(), "patientId is required");
+            User patient = userRepository.findById(patientId)
                 .orElseThrow(() -> new RuntimeException("Paciente no encontrado"));
             if (patient.getRole() != Role.PACIENTE) {
                 throw new RuntimeException("El usuario no tiene rol de paciente");
@@ -160,7 +173,7 @@ public class AppointmentService {
             appointment.setPatient(patient);
         }
         
-        appointment.setDatetime(request.getDatetime());
+        appointment.setDatetime(Objects.requireNonNull(request.getDatetime(), "datetime is required"));
         appointment.setNotes(request.getNotes());
         
         Appointment updated = appointmentRepository.save(appointment);
@@ -172,8 +185,9 @@ public class AppointmentService {
      * Cancelar una cita
      */
     @Transactional
-    public AppointmentResponse cancelAppointment(Long id) {
-        Appointment appointment = appointmentRepository.findById(id)
+    public AppointmentResponse cancelAppointment(@NonNull Long id) {
+        Long appointmentId = Objects.requireNonNull(id, "appointment id is required");
+        Appointment appointment = appointmentRepository.findById(appointmentId)
             .orElseThrow(() -> new RuntimeException("Cita no encontrada"));
         
         if (appointment.getStatus() == AppointmentStatus.CANCELLED) {
@@ -194,8 +208,9 @@ public class AppointmentService {
      * Confirmar una cita
      */
     @Transactional
-    public AppointmentResponse confirmAppointment(Long id) {
-        Appointment appointment = appointmentRepository.findById(id)
+    public AppointmentResponse confirmAppointment(@NonNull Long id) {
+        Long appointmentId = Objects.requireNonNull(id, "appointment id is required");
+        Appointment appointment = appointmentRepository.findById(appointmentId)
             .orElseThrow(() -> new RuntimeException("Cita no encontrada"));
         
         if (appointment.getStatus() == AppointmentStatus.CANCELLED) {
@@ -212,8 +227,9 @@ public class AppointmentService {
      * Completar una cita
      */
     @Transactional
-    public AppointmentResponse completeAppointment(Long id) {
-        Appointment appointment = appointmentRepository.findById(id)
+    public AppointmentResponse completeAppointment(@NonNull Long id) {
+        Long appointmentId = Objects.requireNonNull(id, "appointment id is required");
+        Appointment appointment = appointmentRepository.findById(appointmentId)
             .orElseThrow(() -> new RuntimeException("Cita no encontrada"));
         
         if (appointment.getStatus() == AppointmentStatus.CANCELLED) {
@@ -230,7 +246,7 @@ public class AppointmentService {
      * Validar si hay solapamiento de citas
      * Una cita dura 30 minutos por defecto
      */
-    public boolean hasOverlap(Long doctorId, LocalDateTime datetime, Long excludeAppointmentId) {
+    public boolean hasOverlap(@NonNull Long doctorId, @NonNull LocalDateTime datetime, Long excludeAppointmentId) {
         // Ventana de 30 minutos antes y después
         LocalDateTime start = datetime.minusMinutes(30);
         LocalDateTime end = datetime.plusMinutes(30);

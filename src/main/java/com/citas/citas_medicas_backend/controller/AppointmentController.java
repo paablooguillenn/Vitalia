@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.lang.NonNull;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,6 +16,7 @@ import java.io.PrintWriter;
 import java.time.LocalDateTime;
 
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/appointments")
@@ -32,57 +34,66 @@ public class AppointmentController {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN') or hasRole('MEDICO') or hasRole('PACIENTE')")
-    public ResponseEntity<AppointmentResponse> getAppointmentById(@PathVariable Long id) {
-        AppointmentResponse appointment = appointmentService.getAppointmentById(id);
+    public ResponseEntity<AppointmentResponse> getAppointmentById(@PathVariable @NonNull Long id) {
+        Long appointmentId = Objects.requireNonNull(id, "id is required");
+        AppointmentResponse appointment = appointmentService.getAppointmentById(appointmentId);
         return ResponseEntity.ok(appointment);
     }
 
     @GetMapping("/doctor/{doctorId}")
     @PreAuthorize("hasRole('ADMIN') or hasRole('MEDICO')")
-    public ResponseEntity<List<AppointmentResponse>> getAppointmentsByDoctor(@PathVariable Long doctorId) {
-        List<AppointmentResponse> appointments = appointmentService.getAppointmentsByDoctor(doctorId);
+    public ResponseEntity<List<AppointmentResponse>> getAppointmentsByDoctor(@PathVariable @NonNull Long doctorId) {
+        Long doctor = Objects.requireNonNull(doctorId, "doctorId is required");
+        List<AppointmentResponse> appointments = appointmentService.getAppointmentsByDoctor(doctor);
         return ResponseEntity.ok(appointments);
     }
 
     @GetMapping("/patient/{patientId}")
     @PreAuthorize("hasRole('ADMIN') or hasRole('PACIENTE')")
-    public ResponseEntity<List<AppointmentResponse>> getAppointmentsByPatient(@PathVariable Long patientId) {
-        List<AppointmentResponse> appointments = appointmentService.getAppointmentsByPatient(patientId);
+    public ResponseEntity<List<AppointmentResponse>> getAppointmentsByPatient(@PathVariable @NonNull Long patientId) {
+        Long patient = Objects.requireNonNull(patientId, "patientId is required");
+        List<AppointmentResponse> appointments = appointmentService.getAppointmentsByPatient(patient);
         return ResponseEntity.ok(appointments);
     }
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN') or hasRole('PACIENTE')")
-    public ResponseEntity<AppointmentResponse> createAppointment(@RequestBody AppointmentRequest request) {
-        AppointmentResponse response = appointmentService.createAppointment(request);
+    public ResponseEntity<AppointmentResponse> createAppointment(@RequestBody @NonNull AppointmentRequest request) {
+        AppointmentRequest safeRequest = Objects.requireNonNull(request, "request is required");
+        AppointmentResponse response = appointmentService.createAppointment(safeRequest);
         return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN') or hasRole('MEDICO')")
-    public ResponseEntity<AppointmentResponse> updateAppointment(@PathVariable Long id, @RequestBody AppointmentRequest request) {
-        AppointmentResponse response = appointmentService.updateAppointment(id, request);
+    public ResponseEntity<AppointmentResponse> updateAppointment(@PathVariable @NonNull Long id, @RequestBody @NonNull AppointmentRequest request) {
+        Long appointmentId = Objects.requireNonNull(id, "id is required");
+        AppointmentRequest safeRequest = Objects.requireNonNull(request, "request is required");
+        AppointmentResponse response = appointmentService.updateAppointment(appointmentId, safeRequest);
         return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN') or hasRole('MEDICO')")
-    public ResponseEntity<AppointmentResponse> cancelAppointment(@PathVariable Long id) {
-        AppointmentResponse response = appointmentService.cancelAppointment(id);
+    public ResponseEntity<AppointmentResponse> cancelAppointment(@PathVariable @NonNull Long id) {
+        Long appointmentId = Objects.requireNonNull(id, "id is required");
+        AppointmentResponse response = appointmentService.cancelAppointment(appointmentId);
         return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{id}/confirm")
     @PreAuthorize("hasRole('ADMIN') or hasRole('MEDICO')")
-    public ResponseEntity<AppointmentResponse> confirmAppointment(@PathVariable Long id) {
-        AppointmentResponse response = appointmentService.confirmAppointment(id);
+    public ResponseEntity<AppointmentResponse> confirmAppointment(@PathVariable @NonNull Long id) {
+        Long appointmentId = Objects.requireNonNull(id, "id is required");
+        AppointmentResponse response = appointmentService.confirmAppointment(appointmentId);
         return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{id}/complete")
     @PreAuthorize("hasRole('ADMIN') or hasRole('MEDICO')")
-    public ResponseEntity<AppointmentResponse> completeAppointment(@PathVariable Long id) {
-        AppointmentResponse response = appointmentService.completeAppointment(id);
+    public ResponseEntity<AppointmentResponse> completeAppointment(@PathVariable @NonNull Long id) {
+        Long appointmentId = Objects.requireNonNull(id, "id is required");
+        AppointmentResponse response = appointmentService.completeAppointment(appointmentId);
         return ResponseEntity.ok(response);
     }
 
@@ -124,5 +135,9 @@ public class AppointmentController {
                     app.getUpdatedAt().toString());
             }
         }
+    }
+
+    private String safe(Object value) {
+        return value == null ? "" : value.toString();
     }
 }

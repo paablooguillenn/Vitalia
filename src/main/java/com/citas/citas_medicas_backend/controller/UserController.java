@@ -1,9 +1,11 @@
 package com.citas.citas_medicas_backend.controller;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -27,12 +29,13 @@ public class UserController {
         this.passwordEncoder = passwordEncoder;
     }
 
-    // Listar todos
+    // Listar todos (solo usuarios activos)
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public List<UserResponse> getAll() {
         return userRepository.findAll()
                 .stream()
+                .filter(user -> user.isEnabled()) // Solo usuarios activos
                 .map(this::toResponse)
                 .collect(Collectors.toList());
     }
@@ -40,8 +43,9 @@ public class UserController {
     // Obtener por id
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<UserResponse> getById(@PathVariable Long id) {
-        return userRepository.findById(id)
+    public ResponseEntity<UserResponse> getById(@PathVariable @NonNull Long id) {
+        Long userId = Objects.requireNonNull(id, "id is required");
+        return userRepository.findById(userId)
                 .map(user -> ResponseEntity.ok(toResponse(user)))
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
@@ -63,16 +67,17 @@ public class UserController {
         user.setRole(request.getRole() != null ? request.getRole() : Role.PACIENTE);
         user.setEnabled(request.getEnabled() != null ? request.getEnabled() : true);
 
-        User saved = userRepository.save(user);
+        User saved = userRepository.save(Objects.requireNonNull(user));
         return ResponseEntity.ok(toResponse(saved));
     }
 
     // Actualizar usuario
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<UserResponse> update(@PathVariable Long id,
+    public ResponseEntity<UserResponse> update(@PathVariable @NonNull Long id,
                                                @RequestBody UserRequest request) {
-        return userRepository.findById(id)
+        Long userId = Objects.requireNonNull(id, "id is required");
+        return userRepository.findById(userId)
                 .map(user -> {
                     if (request.getEmail() != null) user.setEmail(request.getEmail());
                     if (request.getPassword() != null) user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
@@ -81,7 +86,7 @@ public class UserController {
                     if (request.getPhotoUrl() != null) user.setPhotoUrl(request.getPhotoUrl());
                     if (request.getRole() != null) user.setRole(request.getRole());
                     if (request.getEnabled() != null) user.setEnabled(request.getEnabled());
-                    User updated = userRepository.save(user);
+                    User updated = userRepository.save(Objects.requireNonNull(user));
                     return ResponseEntity.ok(toResponse(updated));
                 })
                 .orElseGet(() -> ResponseEntity.notFound().build());
@@ -90,11 +95,12 @@ public class UserController {
 // Borrado lógico (desactivar)
 @DeleteMapping("/{id}")
 @PreAuthorize("hasRole('ADMIN')")
-public ResponseEntity<?> delete(@PathVariable Long id) {
-    return userRepository.findById(id)
+public ResponseEntity<?> delete(@PathVariable @NonNull Long id) {
+    Long userId = Objects.requireNonNull(id, "id is required");
+    return userRepository.findById(userId)
             .map(user -> {
                 user.setEnabled(false);
-                userRepository.save(user);
+                userRepository.save(Objects.requireNonNull(user));
                 return ResponseEntity.noContent().build();
             })
             .orElseGet(() -> ResponseEntity.notFound().build());
@@ -122,7 +128,7 @@ public ResponseEntity<?> delete(@PathVariable Long id) {
                     if (request.getLastName() != null) user.setLastName(request.getLastName());
                     if (request.getPhotoUrl() != null) user.setPhotoUrl(request.getPhotoUrl());
                     // No permitir cambiar email, password, role desde perfil
-                    User updated = userRepository.save(user);
+                    User updated = userRepository.save(Objects.requireNonNull(user));
                     return ResponseEntity.ok(toResponse(updated));
                 })
                 .orElseGet(() -> ResponseEntity.notFound().build());
